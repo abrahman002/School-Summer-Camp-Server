@@ -25,6 +25,20 @@ const client = new MongoClient(uri, {
   }
 });
 
+const userCollection=client.db('schoolDb').collection('users')
+
+// user 
+app.post('/users',async(req,res)=>{
+    const user=req.body;
+    const query={email:user.email};
+    const exiting=await userCollection.findOne(query);
+    if(exiting){
+       return res.send({message:'you already extists'})
+    }
+    const result=await userCollection.insertOne(user);
+    res.send(result);
+})
+
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
@@ -34,7 +48,7 @@ async function run() {
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
     // Ensures that the client will close when you finish/error
-    await client.close();
+    // await client.close();
   }
 }
 run().catch(console.dir);
