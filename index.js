@@ -27,6 +27,7 @@ const client = new MongoClient(uri, {
 
 const userCollection=client.db('schoolDb').collection('users')
 const popularClassCollection=client.db('schoolDb').collection('popularclass')
+const instractorClassCollection=client.db('schoolDb').collection('instructor')
 
 // user oparetion
 // app.get('/users',async(req,res)=>{
@@ -44,9 +45,16 @@ const popularClassCollection=client.db('schoolDb').collection('popularclass')
 //     res.send(result);
 // })
 
+// popularClass oparetion
 app.get('/popularclass',async(req,res)=>{
     const result=await popularClassCollection.find().toArray();
     res.send(result);
+})
+
+// popularInstractor oparetion
+app.get('/instructor',async(req,res)=>{
+  const result=await instractorClassCollection.find().toArray();
+  res.send(result);
 })
 
 async function run() {
