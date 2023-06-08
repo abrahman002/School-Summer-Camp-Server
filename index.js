@@ -26,16 +26,26 @@ const client = new MongoClient(uri, {
 });
 
 const userCollection=client.db('schoolDb').collection('users')
+const popularClassCollection=client.db('schoolDb').collection('popularclass')
 
-// user 
-app.post('/users',async(req,res)=>{
-    const user=req.body;
-    const query={email:user.email};
-    const exiting=await userCollection.findOne(query);
-    if(exiting){
-       return res.send({message:'you already extists'})
-    }
-    const result=await userCollection.insertOne(user);
+// user oparetion
+// app.get('/users',async(req,res)=>{
+//   const result=await userCollection.find().toArray();
+//   res.send(result);
+// })
+// app.post('/users',async(req,res)=>{
+//     const user=req.body;
+//     const query={email:user.email};
+//     const exiting=await userCollection.findOne(query);
+//     if(exiting){
+//        return res.send({message:'you already extists'})
+//     }
+//     const result=await userCollection.insertOne(user);
+//     res.send(result);
+// })
+
+app.get('/popularclass',async(req,res)=>{
+    const result=await popularClassCollection.find().toArray();
     res.send(result);
 })
 
