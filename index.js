@@ -58,6 +58,17 @@ app.patch('/users/admin/:id',async(req,res)=>{
   const result=await userCollection.updateOne(filter,updateuser)
   res.send(result);
 })
+app.patch('/users/instractor/:id',async(req,res)=>{
+  const id=req.params.id;
+  const filter={_id: new ObjectId(id)}
+  const updateuser={
+    $set:{
+      role:'instractor'
+    }
+  }
+  const result=await userCollection.updateOne(filter,updateuser)
+  res.send(result);
+})
 
 // addclasss
 app.get('/addclass',async(req,res)=>{
