@@ -4,7 +4,7 @@ const cors = require('cors');
 const port=process.env.PORT || 5000;
 require('dotenv').config();
 const axios = require('axios').default;
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
 
 // middleware
@@ -45,6 +45,18 @@ app.post('/users',async(req,res)=>{
     }
     const result=await userCollection.insertOne(user);
     res.send(result);
+})
+
+app.patch('/users/admin/:id',async(req,res)=>{
+  const id=req.params.id;
+  const filter={_id: new ObjectId(id)}
+  const updateuser={
+    $set:{
+      role:'admin'
+    }
+  }
+  const result=await userCollection.updateOne(filter,updateuser)
+  res.send(result);
 })
 
 // addclasss
