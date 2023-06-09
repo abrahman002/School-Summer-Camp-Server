@@ -60,7 +60,9 @@ app.get('/popularclass',async(req,res)=>{
 
 // popularInstractor oparetion
 app.get('/instructor',async(req,res)=>{
-  const result=await instractorClassCollection.find().toArray();
+  const query={}
+  const options={"students":-1}
+  const result=await instractorClassCollection.find(query,options).toArray();
   res.send(result);
 })
 
