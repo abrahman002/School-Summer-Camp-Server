@@ -29,6 +29,7 @@ const client = new MongoClient(uri, {
 const userCollection=client.db('schoolDb').collection('users')
 const popularClassCollection=client.db('schoolDb').collection('popularclass')
 const instractorClassCollection=client.db('schoolDb').collection('instructor')
+const addClassCollection=client.db('schoolDb').collection('addclass')
 
 // user oparetion
 app.get('/users',async(req,res)=>{
@@ -44,6 +45,17 @@ app.post('/users',async(req,res)=>{
     }
     const result=await userCollection.insertOne(user);
     res.send(result);
+})
+
+// addclasss
+app.get('/addclass',async(req,res)=>{
+  const result=await addClassCollection.find().toArray();
+  res.send(result);
+})
+app.post('/addclass',async(req,res)=>{
+  const item=req.body;
+  const result=await addClassCollection.insertOne(item);
+  res.send(result);
 })
 
 // popularClass oparetion
