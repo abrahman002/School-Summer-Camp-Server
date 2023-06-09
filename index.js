@@ -31,20 +31,20 @@ const popularClassCollection=client.db('schoolDb').collection('popularclass')
 const instractorClassCollection=client.db('schoolDb').collection('instructor')
 
 // user oparetion
-// app.get('/users',async(req,res)=>{
-//   const result=await userCollection.find().toArray();
-//   res.send(result);
-// })
-// app.post('/users',async(req,res)=>{
-//     const user=req.body;
-//     const query={email:user.email};
-//     const exiting=await userCollection.findOne(query);
-//     if(exiting){
-//        return res.send({message:'you already extists'})
-//     }
-//     const result=await userCollection.insertOne(user);
-//     res.send(result);
-// })
+app.get('/users',async(req,res)=>{
+  const result=await userCollection.find().toArray();
+  res.send(result);
+})
+app.post('/users',async(req,res)=>{
+    const user=req.body;
+    const query={email:user.email};
+    const exiting=await userCollection.findOne(query);
+    if(exiting){
+       return res.send({message:'you already extists'})
+    }
+    const result=await userCollection.insertOne(user);
+    res.send(result);
+})
 
 // popularClass oparetion
 app.get('/popularclass',async(req,res)=>{
