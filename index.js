@@ -3,6 +3,7 @@ const app=express();
 const cors = require('cors');
 const port=process.env.PORT || 5000;
 require('dotenv').config();
+const axios = require('axios').default;
 const { MongoClient, ServerApiVersion } = require('mongodb');
 
 
@@ -47,7 +48,13 @@ const instractorClassCollection=client.db('schoolDb').collection('instructor')
 
 // popularClass oparetion
 app.get('/popularclass',async(req,res)=>{
-    const result=await popularClassCollection.find().toArray();
+  const query={};
+  const options={
+    sort:{
+      "students_enrolled":-1
+    }
+  }
+    const result=await popularClassCollection.find(query,options).toArray();
     res.send(result);
 })
 
