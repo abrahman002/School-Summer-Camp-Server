@@ -57,8 +57,19 @@ app.post('/jwt',(req,res)=>{
   res.send({token})
 })
 
+// admin verify
+const verifyAdmin=async(req,res,next)=>{
+  const email=req.decoded.email;
+  const query={email:email};
+  const user=await userCollection.findOne(query);
+  if(user?.role !=='admin'){
+         return res.status(403).send({error:true,message:'forbidden message'})
+  }
+  next()
+}
+
 // user oparetion
-app.get('/users', async(req,res)=>{
+app.get('/users',jwtVerify, async(req,res)=>{
  
   const result=await userCollection.find().toArray();
   res.send(result);
@@ -90,6 +101,8 @@ app.post('/users',async(req,res)=>{
 })
 
 
+// admin get oparation
+
 app.get('/users/admin/:email',jwtVerify, async(req,res)=>{
    const email=req.params.email;
    const decoded=req.decoded.email;
@@ -112,6 +125,19 @@ app.patch('/users/admin/:id',async(req,res)=>{
   const result=await userCollection.updateOne(filter,updateuser)
   res.send(result);
 })
+
+// instractor get oparetion
+app.get('/users/instractor/:email',jwtVerify, async(req,res)=>{
+  const email=req.params.email;
+  const decoded=req.decoded.email;
+  if(email !== decoded){
+   res.send({instractor:false})
+  }
+  const query={email:email};
+  const user=await userCollection.findOne(query);
+  res.send({instractor:user?.role === 'instractor'})
+})
+
 app.patch('/users/instractor/:id',async(req,res)=>{
   const id=req.params.id;
   const filter={_id: new ObjectId(id)}
