@@ -12,6 +12,23 @@ const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 app.use(cors())
 app.use(express.json());
 
+// jwt verify
+
+const jwtVerify=(req,res,next)=>{
+  const authorization=req.headers.authorization;
+  if(!authorization){
+    return res.status(401).send({error:true, message:'unathorized access'})
+  }
+  const token=authorization.split(' ')[1];
+   jwt.verify(token,process.env.ACCESS_TOKEN_SECRET,(err,decoded)=>{
+    if(err){
+      res.status(401).send({error:true, message:'unathorized access'})
+    }
+    req.decoded=decoded;
+    next()
+   })
+}
+
 
 // mongodb
 
@@ -36,13 +53,29 @@ const addClassCollection=client.db('schoolDb').collection('addclass')
 // jwt
 app.post('/jwt',(req,res)=>{
   const user=req.body;
-  const token=jwt.sign(user,process.env.ACCESS_TOKEN_SECRET,{expiresIn:'1h'})
-  res.send(token)
+  const token=jwt.sign(user,process.env.ACCESS_TOKEN_SECRET,{expiresIn:'1hr'})
+  res.send({token})
 })
 
 // user oparetion
-app.get('/users',async(req,res)=>{
+app.get('/users', async(req,res)=>{
+ 
   const result=await userCollection.find().toArray();
+  res.send(result);
+})
+app.get('/users/:id',jwtVerify, async(req,res)=>{
+  const email=req.query.email;
+  if(!email){
+    res.send([])
+  }
+
+  const decodedEmail=req.decoded.email;
+  if(email!==decodedEmail){
+         return res.status(401).send({error:true, message:'unathorized access'})
+  }
+  
+  const query={email:email}
+  const result=await userCollection.find(query).toArray();
   res.send(result);
 })
 app.post('/users',async(req,res)=>{
@@ -54,6 +87,18 @@ app.post('/users',async(req,res)=>{
     }
     const result=await userCollection.insertOne(user);
     res.send(result);
+})
+
+
+app.get('/users/admin/:email',jwtVerify, async(req,res)=>{
+   const email=req.params.email;
+   const decoded=req.decoded.email;
+   if(email !== decoded){
+    res.send({admin:false})
+   }
+   const query={email:email};
+   const user=await userCollection.findOne(query);
+   res.send({admin:user?.role === 'admin'})
 })
 
 app.patch('/users/admin/:id',async(req,res)=>{
@@ -80,7 +125,7 @@ app.patch('/users/instractor/:id',async(req,res)=>{
 })
 
 // addclasss
-app.get('/addclass',async(req,res)=>{
+app.get('/addclass', async(req,res)=>{
   const result=await addClassCollection.find().toArray();
   res.send(result);
 })
