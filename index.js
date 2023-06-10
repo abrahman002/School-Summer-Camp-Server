@@ -48,6 +48,7 @@ const userCollection=client.db('schoolDb').collection('users')
 const popularClassCollection=client.db('schoolDb').collection('popularclass')
 const instractorClassCollection=client.db('schoolDb').collection('instructor')
 const addClassCollection=client.db('schoolDb').collection('addclass')
+const instractorAddClassCollection=client.db('schoolDb').collection('instractoraddclass')
 
 
 // jwt
@@ -147,6 +148,18 @@ app.patch('/users/instractor/:id',async(req,res)=>{
     }
   }
   const result=await userCollection.updateOne(filter,updateuser)
+  res.send(result);
+})
+
+// instractor add class
+
+app.get('/intractoraddclass',async(req,res)=>{
+  const result=await instractorAddClassCollection.find().toArray();
+  res.send(result)
+})
+app.post('/intractoraddclass',async(req,res)=>{
+  const addClass=req.body;
+  const result=await instractorAddClassCollection.insertOne(addClass);
   res.send(result);
 })
 
