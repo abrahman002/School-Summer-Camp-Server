@@ -154,14 +154,64 @@ app.patch('/users/instractor/:id',async(req,res)=>{
 // instractor add class
 
 app.get('/intractoraddclass',async(req,res)=>{
-  const result=await instractorAddClassCollection.find().toArray();
+  const query={};
+  const options={
+    sort:{
+      "enrolled":-1
+    },
+    limit: 6
+  }
+  const result=await instractorAddClassCollection.find(query,options).toArray();
   res.send(result)
 })
+
+
+app.patch('/classes/:classId', async (req, res) => {
+  const classId = req.params.classId;
+  const { status } = req.body;
+
+  try {
+    const updatedClass = await instractorAddClassCollection.findOneAndUpdate(
+      { _id: classId },
+      { $set: { status } },
+      { returnOriginal: false }
+    );
+
+    if (!updatedClass.value) {
+      return res.status(404).json({ message: 'Class not found' });
+    }
+
+    res.json(updatedClass.value);
+  } catch (error) {
+    console.error('Error updating class status:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
 app.post('/intractoraddclass',async(req,res)=>{
   const addClass=req.body;
   const result=await instractorAddClassCollection.insertOne(addClass);
   res.send(result);
 })
+
+// admin approve and deny
+
+app.patch('/classes/:id', (req, res) => {
+  const classId = parseInt(req.params.id);
+  const { status } = req.body;
+
+  // Update the class with the given id in the database
+  // Your implementation here
+
+  // Return the updated class object
+  const updatedClass = {
+    _id: classId,
+    // Update other properties if necessary
+    status: status,
+  };
+
+  res.json(updatedClass);
+});
 
 // addclasss
 app.get('/addclass', async(req,res)=>{
@@ -176,13 +226,8 @@ app.post('/addclass',async(req,res)=>{
 
 // popularClass oparetion
 app.get('/popularclass',async(req,res)=>{
-  const query={};
-  const options={
-    sort:{
-      "students_enrolled":-1
-    }
-  }
-    const result=await popularClassCollection.find(query,options).toArray();
+  
+    const result=await popularClassCollection.find().toArray();
     res.send(result);
 })
 
