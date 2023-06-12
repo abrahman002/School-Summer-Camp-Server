@@ -1,12 +1,10 @@
 const express = require('express');
 const app = express();
 const cors = require('cors');
+const jwt = require('jsonwebtoken');
+require('dotenv').config()
+const stripe = require('stripe')(process.env.PAYMENT_SECTER_KEY)
 const port = process.env.PORT || 5000;
-require('dotenv').config();
-const axios = require('axios').default;
-const jwt = require('jsonwebtoken')
-const stripe=require('stripe')(process.env.PAYMENT_SECTER_KEY)
-const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
 
 // middleware
@@ -33,6 +31,7 @@ const jwtVerify = (req, res, next) => {
 
 // mongodb
 
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.6kes8os.mongodb.net/?retryWrites=true&w=majority`;
 
@@ -51,6 +50,7 @@ const instractorClassCollection = client.db('schoolDb').collection('instructor')
 const addClassCollection = client.db('schoolDb').collection('addclass')
 const instractorAddClassCollection = client.db('schoolDb').collection('instractoraddclass')
 const feedbackCollection = client.db('schoolDb').collection('feedback')
+const paymentsCollection = client.db('schoolDb').collection('payments')
 
 
 // jwt
@@ -167,6 +167,32 @@ app.get('/intractoraddclass', async (req, res) => {
   res.send(result)
 })
 
+app.get('/intractoraddclass/:id',async(req,res)=>{
+  const id=req.params.id;
+  const query={_id: new ObjectId(id)};
+  const result=await instractorAddClassCollection.findOne(query);
+  res.send(result)
+ })
+
+
+app.put('/intractoraddclass/:id',async(req,res)=>{
+  const id=req.params.id;
+  const updatedUser=req.body;
+  const filter={_id: new ObjectId(id)};
+  const optional={upsert:true}
+  const user={
+    $set:{
+      title:updatedUser.title,
+      discription:updatedUser.discription,
+      status:updatedUser.status
+    }
+  }
+
+  const result=await instractorAddClassCollection.updateOne(filter,user,optional);
+  res.send(result)
+})
+
+
 
 app.patch('/classes/:classId', async (req, res) => {
   const classId = req.params.classId;
@@ -212,15 +238,29 @@ app.patch('/classes/:id', (req, res) => {
 });
 
 // Payment intert
-app.post('/create-payment-intert',async(req,res)=>{
-  const {classPrice}=req.body;
-  const amount=classPrice*100;
-  const paymentIntert=await  stripe.paymentInterts.create({
-    amount:amount,
-    currency:'usd',
-    payment_method_types:['card']
+app.post('/create-payment-intent', jwtVerify, async (req, res) => {
+  const { price } = req.body;
+  const amount = parseInt(price * 100);
+  const paymentIntent = await stripe.paymentIntents.create({
+    amount: amount,
+    currency: 'inr',
+    payment_method_types: ['card']
   });
-  res.send({clientSecret: paymentIntert.client_secret})
+
+  res.send({
+    clientSecret: paymentIntent.client_secret
+  })
+})
+app.post('/payments', async (req, res) => {
+  const payment = req.body;
+  const insertResult = await paymentsCollection.insertOne(payment);
+  console.log(insertResult)
+  res.send(insertResult);
+})
+
+app.get('/payments',async(req,res)=>{
+  const result=await paymentsCollection.find().toArray()
+  res.send(result)
 })
 
 // feedback
@@ -268,6 +308,19 @@ app.post('/addclass', async (req, res) => {
   const item = req.body;
   const result = await addClassCollection.insertOne(item);
   res.send(result);
+})
+app.get('/addclass/:id', async (req, res) => {
+  const id = req.params.id;
+  const query = { _id: new ObjectId(id) };
+  const result = await addClassCollection.findOne(query);
+  res.send(result)
+})
+
+app.delete('/addclass/:id', async (req, res) => {
+  const id = req.params.id;
+  const query = { _id: new ObjectId(id) }
+  const result = await addClassCollection.deleteOne(query);
+  res.send(result)
 })
 
 // popularClass oparetion
